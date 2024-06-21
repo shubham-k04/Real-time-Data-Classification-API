@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include("./partials/head") %>
+    <title>Homepage</title>
+</head>
+<body>
+    <%- include("./partials/nav") %>
+    
+    <div class="container mt-4">
+        <div id="status"> </div>
+    </div>
+
+    <div class="container mt-4" style="text-align: center; color: green;">
+        <h1>Welcome to Real-time Data Classification API</h1>
+    </div>
+
+    <% if(locals.user) { %>
+        <div class="container mt-4">
+            <div class="row">
+
+                <!-- First Block: Get Rule -->
+                <div class="col-md-6 mb-4">
+                    <div class="card" style="text-align: center;">
+                        <form>
+                            <button type="submit" class="btn btn-primary" id="getRule">Get rule</button>
+                        </form>
+                    </div>
+
+                    <table class="table table-bordered mt-3">
+                        <thead>
+                        <tr>
+                            <th>Serial No</th>
+                            <th>Rule</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- Rules will be dynamically inserted here -->
+                        </tbody>
+                    </table>
+                    
+                </div>
+
+                <!-- Second Block: Create Rule -->
+
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <form>
+                                <div class="mb-3">
+                                    <label for="rule" class="form-label">Define rule</label>
+                                    <input type="text" class="form-control" name="rule" id="createRuleInput" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary" id="createRule">Create rule</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                <!-- Third Block: Update Rule -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <form>
+                                <div class="mb-3">
+                                    <label for="rule" class="form-label">Enter Rule Number</label>
+                                    <input type="number" class="form-control" name="ruleNo" id="updateRuleNoInput" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="rule" class="form-label">Define new rule</label>
+                                    <input type="text" class="form-control" name="rule" id="updateRuleInput" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary" id="updateRule">Update rule</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fourth Block: Delete Rule -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <form>
+                                <div class="mb-3">
+                                    <label for="rule" class="form-label">Enter Rule Number</label>
+                                    <input type="number" class="form-control" name="ruleNo" id="deleteRuleNoInput" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary" id="deleteRule">Delete rule</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <% } %>
+
+    <%- include("./partials/scripts") %>
+
+    <script>
+  
+    document.getElementById('getRule').addEventListener('click', async function(event) {
+        event.preventDefault(); 
+        
+        const response = await fetch('/user/read');
+        const rules = await response.json();
+        const rule = rules.rules;
+        const tableBody = document.querySelector('tbody');
+        tableBody.innerHTML = ''; 
+
+        if(rules.error){
+        document.getElementById('status').innerHTML = '<div class="alert alert-danger" role="alert">' + rules.error +'</div>';
+        } else {
+            rule.forEach((rule, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${rule}</td>
+            `;
+            tableBody.appendChild(row);
+            });
+        }
+        
+    });
+
+    document.getElementById('createRule').addEventListener('click', async (event) => {
+        event.preventDefault();
+        const rule = document.getElementById('createRuleInput').value;
+
+        const response = await fetch('/user/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rule })
+
+    });
+    const res = await response.json();
+    if(res.status){
+        document.getElementById('status').innerHTML = '<div class="alert alert-success" role="alert">' + res.status +'</div>';
+        document.getElementById('createRuleInput').value = null;
+    } else if(res.error){
+        document.getElementById('status').innerHTML = '<div class="alert alert-danger" role="alert">' + res.error +'</div>';
+    }
+        
+    });
+
+    document.getElementById('updateRule').addEventListener('click', async (event) => {
+        event.preventDefault();
+        const rule = document.getElementById('updateRuleInput').value;
+        const ruleNo = document.getElementById('updateRuleNoInput').value;
+
+        const response = await fetch('/user/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rule, ruleNo })
+
+    });
+    const res = await response.json();
+    if(res.status){
+        document.getElementById('status').innerHTML = '<div class="alert alert-success" role="alert">' + res.status +'</div>';
+        document.getElementById('updateRuleInput').value = null;
+        document.getElementById('updateRuleNoInput').value = null;
+    } else if(res.error){
+        document.getElementById('status').innerHTML = '<div class="alert alert-danger" role="alert">' + res.error +'</div>';
+    }
+        
+    });
+
+    document.getElementById('deleteRule').addEventListener('click', async (event) => {
+        event.preventDefault();
+        const ruleNo = document.getElementById('deleteRuleNoInput').value;
+
+        const response = await fetch('/user/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ruleNo })
+
+    });
+    const res = await response.json();
+
+    if(res.status){
+        document.getElementById('status').innerHTML = '<div class="alert alert-success" role="alert">' + res.status +'</div>';
+        document.getElementById('deleteRuleNoInput').value = null;
+    } else if(res.error){
+        document.getElementById('status').innerHTML = '<div class="alert alert-danger" role="alert">' + res.error +'</div>';
+    }
+        
+    });
+
+    </script>
+</body>
+</html>
+
+

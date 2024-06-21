@@ -1,0 +1,16 @@
+{
+    "operation": [ "count", "sum", "max", "min", "product" ],
+    "com_opr": [ ">=", "<=", "=", "!=", ">", "<" ],
+    "OF": "of",
+    "comma": ",",
+    "open_b": "(",
+    "closed_b": ")",
+    "space": " ",
+    "digit": ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+    "letter": ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"],
+    "word": "<letter>+",
+    "number": "<digit>+",
+    "term": "<operation> of <open_b> <expression> <closed_b>",
+    "expression": "<operation> of <open_b> <term> [ <comma> <term> ]* <closed_b>",
+    "rule": [ "<expression> <com_opr> <expression>", "<expression> <com_opr> <number>" ]
+}

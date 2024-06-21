@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include("./partials/head") %>
+    <title>Stream</title>
+</head>
+<body>
+    <%- include("./partials/nav") %>
+
+    <div class="container mt-4">
+        <div id="status"> </div>
+    </div>
+
+    <div class="container mt-4" style="text-align: center; color: blue;">
+    <h1>Data streaming</h1>
+    </div>
+
+   <div class="container mt-4">
+    
+    <div class="col mb-4">
+    <div class="card">
+        <div class="card-body">
+           
+                <div class="mb-3">
+                        <label for="input" class="form-label">Input String</label>
+                        <input type="text" class="form-control" id="inputString" name="input" aria-describedby="input">
+                </div>
+            
+                <div class="col d-flex justify-content-center align-items-center mb-2">
+                    <button type="submit" class="btn btn-primary" id="submitButton">Http</button>
+                    <label for="resultInput" class="mx-2 mb-0">Result:</label>
+                    <input type="text" id="resultInput" class="form-control form-control-sm" style="width: auto;" readonly>
+                </div>
+            
+
+            <div class="col text-center">
+                <button type="submit" class="btn btn-primary" id="myButton">Classify</button>
+                <button type="button" class="btn btn-danger" id="disconnectButton">Stop</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <div class="row">
+
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title" style="text-align: center;">Satisfy defined rule</h5>
+                    <ul id="satisfy-list"></ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title" style="text-align: center;">Don't satisfy defined rule</h5>
+                    <ul id="not-satisfy-list"></ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    </div>
+
+
+
+    <%- include("./partials/scripts") %>
+
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+
+        document.getElementById('submitButton').addEventListener('click', function(event) {
+            event.preventDefault(); 
+
+            const inputValue = document.getElementById('inputString').value;
+
+            fetch('/user/classify', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ input: inputValue })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.error){
+                    document.getElementById('status').innerHTML = '<div class="alert alert-danger" role="alert">' + data.error +'</div>';
+                } else {
+                    document.getElementById('resultInput').value = data.result; 
+                }
+                
+            })
+            .catch(error => {
+                resultDiv.innerHTML = 'An error occurred';
+            });
+        });
+            
+
+        const data = `{ "1": "the sun sets behind the mountains, casting a warm orange glow on everything",
+                        "2": "she loves reading books in the quiet corner of the library every afternoon",
+                        "3": "walking through the forest, they found a hidden path leading to a waterfall",
+                        "4": "every morning, he enjoys a cup of coffee while watching the sunrise from his porch",
+                        "5": "the children played joyfully in the park, their laughter echoing through the trees",
+                        "6": "a gentle breeze rustled the leaves as they sat under the old oak tree",
+                        "7": "he found an old photograph that brought back many fond memories of his childhood",
+                        "8": "the cat stretched lazily on the windowsill, basking in the afternoon sunlight",
+                        "9": "she baked a delicious cake for her friend's birthday party tomorrow evening",
+                        "10": "they spent the weekend camping by the lake, enjoying nature's beauty and tranquility" }`
+
+        const dataObject = JSON.parse(data);
+        let socket = null;
+        let intervalId = null;
+        function setConnection(tokenName){
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${tokenName}=`);
+            let token = null;
+            if (parts.length === 2) token = parts.pop().split(';').shift();
+           
+            if (token) {
+                socket = io('http://localhost:8000', {
+                    query: {
+                        token: token,
+                    }
+                }); 
+
+                socket.on('result', (data) => {
+                    const result = data.result;
+                    const message = data.message;
+
+                    const satisfyList = document.getElementById('satisfy-list');
+                    const notSatisfyList = document.getElementById('not-satisfy-list');
+
+                    const listItem = document.createElement('li');
+                    listItem.textContent = message;
+
+                    if (result) {
+                        satisfyList.appendChild(listItem);
+                    } else {
+                        notSatisfyList.appendChild(listItem);
+                    }
+                });
+            }
+        }
+
+        
+
+        document.getElementById("myButton").addEventListener("click", () => {
+            setConnection("token");
+
+            intervalId = setInterval(() => {
+                let stringChosen = Math.floor(Math.random()*10) + 1;
+                const message = dataObject[stringChosen.toString()];
+
+                document.getElementById('inputString').value = message;
+                socket.emit("message", message);
+            }, 1000);
+
+        });
+
+        document.getElementById("disconnectButton").addEventListener("click", () => {
+            if (socket) {
+                clearInterval(intervalId);
+                socket.disconnect();
+                socket = null;
+            }
+        });
+        
+    </script>
+</body>
+</html>
