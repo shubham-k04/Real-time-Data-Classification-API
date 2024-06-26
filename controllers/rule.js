@@ -50,7 +50,7 @@ async function deleteRule(req, res) {
         return res.json({ error: "Please enter rule Number" });
     }
     if(rule.rule.length < ruleNo){
-        return res.json({ status: `Rule No. ${ruleNo} doesn't exist` });
+        return res.json({ error: `Rule No. ${ruleNo} doesn't exist` });
     }
 
     rule.rule.splice(ruleNo-1,1);
@@ -66,6 +66,10 @@ async function classifyInput(req, res) {
         return res.json({ error: "Please enter a query" });
     }
     const result = await engine(message, email);
+
+    if(result.error){
+        return res.json({ error: "No rule created" });
+    }
 
     return res.json({ result: result });
 }

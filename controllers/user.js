@@ -45,7 +45,8 @@ async function loginUser(req, res) {
 
 async function logoutUser(req, res) {
     res.clearCookie("username");
-    return res.clearCookie(process.env.TOKEN_NAME).redirect("/");
+    res.clearCookie(process.env.TOKEN_NAME);
+    return res.redirect("/");
 }
 
 async function applyRule(req, res) {

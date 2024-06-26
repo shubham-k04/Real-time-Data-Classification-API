@@ -18,26 +18,26 @@ function checkForNumber(arg) {
     return pattern.test(arg);
 }
 
-function separarteArguments(arguments) {
+function separarteArguments(args) {
     const delimiter = ", ";
     let parts = [];
     let currentPart = '';
     let depth = 0;
     const delimiterLength = delimiter.length;
 
-    for (let i = 0; i < arguments.length; i++) {
-        if (arguments[i] === '(') {
+    for (let i = 0; i < args.length; i++) {
+        if (args[i] === '(') {
             depth++;
-        } else if (arguments[i] === ')') {
+        } else if (args[i] === ')') {
             depth--;
         }
 
-        if (arguments.substr(i, delimiterLength) === delimiter && depth === 0) {
+        if (args.substr(i, delimiterLength) === delimiter && depth === 0) {
             parts.push(currentPart);
             currentPart = '';
             i += delimiterLength - 1; 
         } else {
-            currentPart += arguments[i];
+            currentPart += args[i];
         }
     }
     
@@ -45,10 +45,10 @@ function separarteArguments(arguments) {
     return parts;
 }
 
-function createObject(operation, arguments, result) {
+function createObject(operation, args, result) {
     return {
         "operation": operation,
-        "arguments": arguments,
+        "arguments": args,
         "result": result,
     }
 }
@@ -66,12 +66,12 @@ function createAST(expression) {
     } 
    
     const __expression = separarteArguments(_expression[1]);
-    arguments = [];
+    _args = [];
     for(_exp in __expression) {
-        arguments.push(createAST(__expression[_exp]));
+        _args.push(createAST(__expression[_exp]));
     }
 
-    return createObject(operation, arguments, null);
+    return createObject(operation, _args, null);
 }
 
 function ruleParser(rule) {

@@ -52,7 +52,7 @@ function evaluateAST(AST, input){
 async function classificationEngine(message, email){
     const user = await Rule.findOne({ email });
     if(!user.rule.length){
-        return res.json({ status: "No rule created" });
+        return { error: "No rule created" };
     }
     // assuming only one rule defined
     const rule = user.rule[0];

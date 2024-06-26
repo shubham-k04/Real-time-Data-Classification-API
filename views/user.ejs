@@ -137,12 +137,17 @@
 
                     const listItem = document.createElement('li');
                     listItem.textContent = message;
-
-                    if (result) {
-                        satisfyList.appendChild(listItem);
+                    console.log()
+                    if(result.error){
+                        document.getElementById('status').innerHTML = '<div class="alert alert-danger" role="alert">' + result.error +'</div>';
                     } else {
-                        notSatisfyList.appendChild(listItem);
+                        if (result) {
+                            satisfyList.appendChild(listItem);
+                        } else {
+                            notSatisfyList.appendChild(listItem);
+                        }
                     }
+                    
                 });
             }
         }
